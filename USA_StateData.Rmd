@@ -1,0 +1,111 @@
+---
+title: "Exploratory Analysis of USA State Data"
+author: "Aditya Kaul"
+date: "November 4, 2015"
+output: html_document
+---
+_Through this analysis we are trying to see if there is a correlation between the different variables that define a state in the US._
+
+_We start the analysis by creating a map that shows the spread of the different variables in all the states. We have used color encoding to represent the values in each state. We compare two maps to see if there is a correlation between variables.
+As an example, we can see that if the **Illiteracy** is high in a state the **Murder Rate** is high as well. In addition we see that for the states that have high **High School Graduates** the **Illiteracy** is low which is expected._
+
+_Similar to the above analysis we can explore the data and the plots we have created to find relations between the variables and find a question that interests us._
+
+```{r, set-options,warning=FALSE}
+#Set width of the output in the markdown to 100 so that all columns appear on same line
+options(width=100)
+#?state
+#Check to see what the matrix contains
+head(state.x77)
+#Convert the matrix to a data frame
+state_data<-as.data.frame(state.x77)
+#Use class() function to see if the conversion was successful
+class(state_data)
+#Use the row names to create a new column called States
+state_data$States<-rownames(state_data)
+#Remove the row names from the data frame
+row.names(state_data)<-NULL
+#Use the head function to see if the changes made were reflected
+head(state_data)
+
+#?gsub
+#Use the gsub() function to rename the column names
+colnames(state_data) <- gsub(" ",
+                             ".",
+                             colnames(state_data))
+
+#Replacing the column names to make them clearer for users
+colnames(state_data)[which(names(state_data) == "HS.Grad")] <- "High.School.Graduates"
+colnames(state_data)[which(names(state_data) == "Life.Exp")] <- "Life.Expectancy"
+
+#install.packages("classInt")
+#install.packages("OIdata")
+library(OIdata)
+library(RColorBrewer)
+library(classInt)
+
+#Save the column names in a variable
+col_names<-colnames(state_data)
+
+#Create a for loop which iterates through the column names and uses them to produce the maps
+#We remove Area and State Names from our analysis
+for(i in 1:(length(col_names)-2)){
+ 
+nclr <- 10 # number of bins
+min <- min(state_data[,col_names[i]]) # theoretical minimum
+max <- max(state_data[,col_names[i]]) # theoretical maximum
+breaks <- (max - min) / nclr
+
+#Use the color purple to represent data on the maps
+plotclr <- brewer.pal(nclr,
+                      "Purples")
+plotvar <- state_data[,col_names[i]]
+
+#?brewer.pal
+#brewer.pal.info
+
+class <- classIntervals(plotvar,
+                        nclr,
+                        style = "fixed",
+                        fixedBreaks = seq(min, max, breaks))
+
+colcode <- findColours(class,
+                       plotclr)
+
+#Creating the base of the map
+map("state",
+    col = "gray80",
+    fill = TRUE,
+    lty = 0)
+#Adding the data to the map
+map("state",
+    col = colcode,
+    fill = TRUE,
+    lty = 0,
+    add = TRUE)
+title(col_names[i])
+#Adding borders to the different states
+map("state",
+    col = "gray",
+    lwd = 1.4,
+    lty = 1,
+    add = TRUE)
+#Adding a legend to the plot
+legend("bottomleft",
+       legend = names(attr(colcode, "table")),
+       title = col_names[i],
+       fill = attr(colcode, "palette"),
+       cex = 0.56,
+       bty = "n")
+}
+
+#Create a scatter plot matrix
+pairs(~Population+Illiteracy+Income+Murder+High.School.Graduates+Life.Expectancy+Frost,
+      data=state_data,
+      main="Relations between different variables in the 50 states of the US",
+      col=rgb(0,0,200,75,maxColorValue=255),
+      pch=20,
+      cex=1.5,
+      upper.panel=panel.smooth,
+      lower.panel=panel.smooth)
+```

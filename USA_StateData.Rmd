@@ -11,7 +11,7 @@ As an example, we can see that if the **Illiteracy** is high in a state the **Mu
 
 _Similar to the above analysis we can explore the data and the plots we have created to find relations between the variables and find a question that interests us._
 
-```{r, set-options,warning=FALSE}
+```{r, set-options,warning=FALSE,fig.width=10,fig.height=7}
 #Set width of the output in the markdown to 100 so that all columns appear on same line
 options(width=100)
 #?state
